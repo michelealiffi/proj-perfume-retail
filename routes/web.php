@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\PerfumeController as AdminPerfumeController;
+use App\Http\Controllers\Guest\PerfumeController as GuestPerfumeController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,18 +16,16 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', [GuestPerfumeController::class, 'index'])->name('home');
+
+Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+    Route::resource('perfumes', AdminPerfumeController::class)->parameters([
+        'perfumes' => 'id',
+    ]);
+
+    Route::get('/dashboard', function () {
+        return view('admin.perfumes.index');
+    })->name('dashboard');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
