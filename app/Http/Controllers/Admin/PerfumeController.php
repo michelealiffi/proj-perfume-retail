@@ -1,33 +1,29 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Perfume;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
 
 class PerfumeController extends Controller
 {
-    private $jsonFile = 'json/perfumes.json';
 
-    private function getPerfumes()
+    public function resizeImage(Request $request)
     {
-        $filePath = storage_path('app/' . $this->jsonFile);
-        if (!file_exists($filePath)) {
-            return [];
-        }
-        return json_decode(file_get_contents($filePath), true) ?? [];
-    }
+        $image = Image::make($request->file('image'));
+        $image->resize(300, 300);
+        $image->save(storage_path('app/public/resized-image.jpg'));
 
-    private function savePerfumes(array $perfumes)
-    {
-        $filePath = storage_path('app/' . $this->jsonFile);
-        file_put_contents($filePath, json_encode($perfumes, JSON_PRETTY_PRINT));
+        return response()->json('Image resized successfully.');
     }
 
     public function index()
     {
-        $perfumes = $this->getPerfumes();
+        $perfumes = Perfume::all();
         return view('admin.perfumes.index', compact('perfumes'));
     }
 
@@ -59,49 +55,41 @@ class PerfumeController extends Controller
             'is_visible' => 'nullable|boolean',
         ]);
 
-        $perfumes = $this->getPerfumes();
-
         if ($request->hasFile('image')) {
-            $path = $request->file('image')->store('public/images');
+            $image = $request->file('image');
+            $img = Image::make($image);
+
+            $path = 'public/images/' . Str::slug($validated['name']) . '.webp';
+            $img->encode('webp', 90);
+            $img->save(storage_path('app/' . $path));
+
             $validated['image'] = str_replace('public/', '', $path);
         }
 
+        $validated['slug'] = Str::slug($validated['name'], '-');
         $validated['is_visible'] = $validated['is_visible'] ?? ($validated['quantity'] > 0);
 
-        $validated['id'] = count($perfumes) > 0 ? max(array_column($perfumes, 'id')) + 1 : 1;
-        $perfumes[] = $validated;
+        Perfume::create($validated);
 
-        $this->savePerfumes($perfumes);
-
-        return redirect()->route('admin.perfumes.index');
+        return redirect()->route('admin.perfumes.index')->with('success', 'Perfume created successfully.');
     }
 
-    public function show($id)
+    public function show($slug)
     {
-        $perfumes = $this->getPerfumes();
-        $perfume = collect($perfumes)->firstWhere('id', $id);
-
-        if (!$perfume) {
-            abort(404);
-        }
-
+        $perfume = Perfume::where('slug', $slug)->firstOrFail();
         return view('admin.perfumes.show', compact('perfume'));
     }
 
-    public function edit($id)
+    public function edit($slug)
     {
-        $perfumes = $this->getPerfumes();
-        $perfume = collect($perfumes)->firstWhere('id', $id);
-
-        if (!$perfume) {
-            abort(404);
-        }
-
+        $perfume = Perfume::where('slug', $slug)->firstOrFail();
         return view('admin.perfumes.edit', compact('perfume'));
     }
 
-    public function update(Request $request, $id)
+    public function update(Request $request, $slug)
     {
+        $perfume = Perfume::where('slug', $slug)->firstOrFail();
+
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'brand' => 'required|string|max:255',
@@ -123,30 +111,23 @@ class PerfumeController extends Controller
             'is_visible' => 'nullable|boolean',
         ]);
 
-        $perfumes = $this->getPerfumes();
-
-        foreach ($perfumes as &$perfume) {
-            if ($perfume['id'] == $id) {
-                if ($request->hasFile('image')) {
-                    $path = $request->file('image')->store('public/images');
-                    $validated['image'] = str_replace('public/', '', $path);
-                }
-                $perfume = array_merge($perfume, $validated);
-                break;
-            }
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store('public/images');
+            $validated['image'] = str_replace('public/', '', $path);
         }
 
-        $this->savePerfumes($perfumes);
+        $validated['slug'] = Str::slug($validated['name'], '-');
+        $validated['is_visible'] = $validated['is_visible'] ?? ($validated['quantity'] > 0);
 
-        return redirect()->route('admin.perfumes.show', $perfume->id)->with('success', 'Perfume updated successfully.');
+        $perfume->update($validated);
+
+        return redirect()->route('admin.perfumes.show', $perfume->slug)->with('success', 'Perfume updated successfully.');
     }
 
-    public function destroy($id)
+    public function destroy($slug)
     {
-        $perfumes = $this->getPerfumes();
-        $perfumes = array_filter($perfumes, fn($perfume) => $perfume['id'] != $id);
-
-        $this->savePerfumes($perfumes);
+        $perfume = Perfume::where('slug', $slug)->firstOrFail();
+        $perfume->delete();
 
         return redirect()->route('admin.perfumes.index')->with('success', 'Perfume deleted successfully.');
     }

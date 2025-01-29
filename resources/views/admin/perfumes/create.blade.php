@@ -1,9 +1,11 @@
-@extends('layouts.admin')
+@extends('layouts.app')
+
+@section('title', 'Create Perfume')
 
 @section('content')
     <h1>Create New Perfume</h1>
 
-    <form action="{{ route('admin.perfumes.store') }}" method="POST" enctype="multipart/form-data">
+    <form action="{{ route('perfumes.store') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="form-group">
             <label for="name">Name</label>

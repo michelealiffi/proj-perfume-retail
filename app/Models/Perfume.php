@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Perfume extends Model
 {
@@ -25,7 +26,8 @@ class Perfume extends Model
         'limited_edition',
         'vegan',
         'natural',
-        'is_visible'
+        'is_visible',
+        'slug',
     ];
 
     protected $casts = [
@@ -45,5 +47,20 @@ class Perfume extends Model
     public function setPriceAttribute($value)
     {
         $this->attributes['price'] = number_format($value, 2, '.', '');
+    }
+
+    protected static function booted()
+    {
+        static::creating(function ($perfume) {
+            if (empty($perfume->slug)) {
+                $perfume->slug = Str::slug($perfume->name);
+            }
+        });
+
+        static::updating(function ($perfume) {
+            if (empty($perfume->slug)) {
+                $perfume->slug = Str::slug($perfume->name);
+            }
+        });
     }
 }

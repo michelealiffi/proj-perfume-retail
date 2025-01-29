@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\PerfumeController as AdminPerfumeController;
 use App\Http\Controllers\Guest\PerfumeController as GuestPerfumeController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,14 +19,19 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [GuestPerfumeController::class, 'index'])->name('home');
 
-Route::middleware(['auth', 'verified'])->prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->middleware('auth', 'admin')->group(function () {
     Route::resource('perfumes', AdminPerfumeController::class)->parameters([
-        'perfumes' => 'id',
+        'perfumes' => 'slug',
     ]);
 
-    Route::get('/dashboard', function () {
+    Route::get('/admin/perfumes', function () {
         return view('admin.perfumes.index');
-    })->name('dashboard');
+    })->middleware('admin');
 });
+
+Route::get('/logout', function () {
+    Auth::logout();
+    return redirect('/');
+})->name('logout');
 
 require __DIR__ . '/auth.php';
