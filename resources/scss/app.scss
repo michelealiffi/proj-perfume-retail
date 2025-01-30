@@ -1,1 +1,11 @@
-@import "~bootstrap/scss/bootstrap";
+@use "bootstrap/scss/bootstrap";
+
+
+.text-small {
+    font-size: 0.8rem;  /* O una dimensione che ti soddisfa */
+    color: #6c757d; /* Colore grigio chiaro */
+}
+
+.logo-color {
+    color: #ff385c;
+}

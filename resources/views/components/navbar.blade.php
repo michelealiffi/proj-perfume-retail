@@ -1,8 +1,8 @@
 <nav class="bg-white shadow-sm navbar navbar-expand-md navbar-light">
     <div class="container">
         <!-- Logo -->
-        <a class="navbar-brand fw-semibold" href="{{ url('/') }}">
-            {{ config('title', 'Perfume Shop') }}
+        <a class="navbar-brand fw-semibold logo-color" href="{{ url('/') }}">
+            {{ config('title', 'Perfume Shop Logo') }}
         </a>
 
         <!-- Toggle per mobile -->
