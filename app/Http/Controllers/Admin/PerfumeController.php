@@ -11,10 +11,19 @@ use Intervention\Image\Facades\Image;
 
 class PerfumeController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $perfumes = Perfume::all();
-        return view('admin.perfumes.index', compact('perfumes'));
+        $sortBy = $request->query('sort_by', 'name'); // Ordine predefinito per nome
+        $sortOrder = $request->query('sort_order', 'asc'); // Ordine predefinito ascendente
+
+        $validColumns = ['name', 'brand', 'price', 'quantity', 'is_visible'];
+        if (!in_array($sortBy, $validColumns)) {
+            $sortBy = 'name';
+        }
+
+        $perfumes = Perfume::orderBy($sortBy, $sortOrder)->get();
+
+        return view('admin.perfumes.index', compact('perfumes', 'sortBy', 'sortOrder'));
     }
 
     public function create()
@@ -30,13 +39,13 @@ class PerfumeController extends Controller
             'category' => 'required|string|max:255',
             'subcategory' => 'nullable|string|max:255',
             'notes' => 'nullable|array',
-            'notes.*' => 'string|max:255',
+            'notes.*' => 'nullable|string|max:255',
             'price' => 'required|numeric',
             'description' => 'nullable|string',
             'size' => 'required|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,svg,webp|max:2048',
             'ingredients' => 'nullable|array',
-            'ingredients.*' => 'string|max:255',
+            'ingredients.*' => 'nullable|string|max:255',
             'quantity' => 'required|integer',
             'gender' => 'required|string',
             'limited_edition' => 'nullable|boolean',
@@ -51,9 +60,10 @@ class PerfumeController extends Controller
             'image' => $request->image ?? '',
             'notes' => $request->notes ?? [],
             'ingredients' => $request->ingredients ?? [],
-            'limited_edition' => $request->limited_edition ?? false,
-            'vegan' => $request->vegan ?? false,
+            'limited_edition' => $request->input('limited_edition', false),
+            'vegan' => $request->input('vegan', false),
             'natural' => $request->natural ?? false,
+            'is_visible' => $request->is_visible ?? false,
         ]);
 
         if ($request->hasFile('image')) {
@@ -95,13 +105,13 @@ class PerfumeController extends Controller
             'category' => 'required|string|max:255',
             'subcategory' => 'nullable|string|max:255',
             'notes' => 'nullable|array',
-            'notes.*' => 'string|max:255',
+            'notes.*' => 'nullable|string|max:255',
             'price' => 'required|numeric',
             'description' => 'nullable|string',
             'size' => 'required|string',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,svg,webp|max:2048',
             'ingredients' => 'nullable|array',
-            'ingredients.*' => 'string|max:255',
+            'ingredients.*' => 'nullable|string|max:255',
             'quantity' => 'required|integer',
             'gender' => 'required|string',
             'limited_edition' => 'nullable|boolean',
@@ -120,11 +130,19 @@ class PerfumeController extends Controller
 
         // Creazione slug e visibilità
         $validated['slug'] = Str::slug($validated['name'], '-');
-        $validated['is_visible'] = $validated['is_visible'] ?? ($validated['quantity'] > 0);
+        $validated['is_visible'] = $request->has('is_visible') ? true : false;
+        $validated['description'] = $validated['description'] ?? '';
+        $validated['subcategory'] = $validated['subcategory'] ?? '';
+        $validated['vegan'] = $request->has('vegan') ? true : false;
+        $validated['limited_edition'] = $request->has('limited_edition') ? true : false;
+        $validated['natural'] = $request->has('natural') ? true : false;
+
 
         $perfume->update($validated);
 
-        return redirect()->route('admin.perfumes.show', $perfume->slug)->with('success', 'Perfume updated successfully.');
+        $perfume->refresh();
+
+        return redirect()->route('perfumes.show', $perfume->slug)->with('success', 'Perfume updated successfully.');
     }
 
     public function destroy($slug)

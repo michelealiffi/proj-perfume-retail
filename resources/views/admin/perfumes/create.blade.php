@@ -83,9 +83,9 @@
                     <label for="gender" class="form-label">Gender *</label>
                     <select id="gender" name="gender" class="form-control">
                         <option value="">Select Gender</option>
-                        <option value="unisex" {{ old('gender') == 'unisex' ? 'selected' : '' }}>Unisex</option>
-                        <option value="uomo" {{ old('gender') == 'uomo' ? 'selected' : '' }}>Male</option>
-                        <option value="donna" {{ old('gender') == 'donna' ? 'selected' : '' }}>Female</option>
+                        <option value="Unisex" {{ old('gender') == 'Unisex' ? 'selected' : '' }}>Unisex</option>
+                        <option value="Uomo" {{ old('gender') == 'Uomo' ? 'selected' : '' }}>Uomo</option>
+                        <option value="Donna" {{ old('gender') == 'Donna' ? 'selected' : '' }}>Donna</option>
                     </select>
                 </div>
 

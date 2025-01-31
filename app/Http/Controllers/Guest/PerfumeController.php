@@ -11,7 +11,9 @@ class PerfumeController extends Controller
 {
     public function index()
     {
-        $perfumes = Perfume::where('is_visible', true)->get();
+        $perfumes = Perfume::where('is_visible', true)
+            ->where('quantity', '>', 0)
+            ->get();
 
         return view('index', compact('perfumes'));
     }

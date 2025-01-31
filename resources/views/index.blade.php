@@ -43,11 +43,14 @@
             </div>
         </div>
 
-        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4" id="perfumesContainer">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-lg-4 g-4 pt-4" id="perfumesContainer">
             @foreach ($perfumes as $index => $perfume)
                 <div class="col perfume-card {{ $index >= 4 ? 'd-none' : '' }}">
                     <div class="m-2 card h-100">
                         <div class="image-container position-relative">
+                            @if ($perfume->limited_edition)
+                                <span class="badge m-2">Limited Edition</span>
+                            @endif
                             <img src="{{ Storage::url($perfume->image) }}" class="card-img-top" alt="{{ $perfume->name }}"
                                 style="object-fit: cover; height: 300px;">
                             <a href=""
@@ -75,8 +78,8 @@
 
     <div class="bg-image py-5">
         <h2 class="text-center pt-5">Vieni e prova anche tu...</h2>
-        <div class="row justify-content-center">
-            <p class="text-center py-3 col-2 text-box">
+        <div class="row justify-content-center m-0">
+            <p class="text-center py-3 col-lg-2 col-md-4 text-box">
                 Immergiti in un mondo di fragranze uniche, create per avvolgere te e il tuo ambiente in un'aura di eleganza
                 e benessere. Scopri le essenze che trasformano ogni momento in un'esperienza sensoriale esclusiva, pensate
                 per esaltare la tua personalità e arricchire ogni spazio con lusso e armonia. Fragranze che parlano di te,
@@ -86,20 +89,33 @@
     </div>
 
     <style>
+        .badge {
+            background-color: #ff385c;
+            color: #fff;
+            font-weight: bold;
+            font-size: 13px;
+            padding: 6px 15px;
+            transform: rotate(-45deg);
+
+            top: 10px;
+            left: -40px;
+            width: 130px;
+            text-align: center;
+            position: absolute;
+            z-index: 1;
+        }
+
         .text-box {
             background-color: rgba(255, 255, 255, 0.7);
-            /* Bianco trasparente */
             padding: 15px;
             border-radius: 10px;
-            /* Angoli arrotondati */
             backdrop-filter: blur(5px);
-            /* Effetto sfocato dietro */
         }
 
         .bg-image {
             background-image: url("/storage/images/Banners-Montale.webp");
             background-repeat: no-repeat;
-            background-size: 100%, 100px;
+            background-size: 100%, 100%;
         }
 
         .image-container {
@@ -131,7 +147,7 @@
         }
 
         .bottom-70 {
-            bottom: 70px;
+            bottom: 100px;
         }
     </style>
 
@@ -150,7 +166,7 @@
 
                 showLessBtn.addEventListener('click', function() {
                     allPerfumes.forEach((perfume, index) => {
-                        if (index >= 4) perfume.classList.add('d-none'); // Nasconde le extra
+                        if (index >= 4) perfume.classList.add('d-none');
                     });
                     showLessBtn.classList.add('d-none'); // Nasconde "Mostra meno"
                     showMoreBtn.classList.remove('d-none'); // Mostra "Mostra più"

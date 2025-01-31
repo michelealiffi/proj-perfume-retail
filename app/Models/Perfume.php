@@ -39,10 +39,10 @@ class Perfume extends Model
         'is_visible' => 'boolean',
     ];
 
-    public function getIsVisibleAttribute($value)
-    {
-        return $value ? 'Visible' : 'Not Visible';
-    }
+    // public function getIsVisibleAttribute($value)
+    // {
+    //     return $value ? 'Visible' : 'Not Visible';
+    // }
 
     public function setPriceAttribute($value)
     {
@@ -61,6 +61,16 @@ class Perfume extends Model
             if (empty($perfume->slug)) {
                 $perfume->slug = Str::slug($perfume->name);
             }
+        });
+
+        static::creating(function ($perfume) {
+            $perfume->limited_edition = $perfume->limited_edition ?? false;
+            $perfume->vegan = $perfume->vegan ?? false;
+        });
+
+        static::updating(function ($perfume) {
+            $perfume->limited_edition = $perfume->limited_edition ?? false;
+            $perfume->vegan = $perfume->vegan ?? false;
         });
     }
 }
