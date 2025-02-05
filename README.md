@@ -5,6 +5,7 @@
  - npm install
  - create and insert data in the file .env
  - php artisan migrate
+ - php artisan db:seed
  - php artisan serve && npm run dev
 ```
 
